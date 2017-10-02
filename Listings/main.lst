@@ -1,0 +1,155 @@
+C51 COMPILER V9.56.0.0   MAIN                                                              06/02/2017 21:38:37 PAGE 1   
+
+
+C51 COMPILER V9.56.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main
+                    -.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include<reg52.h>
+   2          #include<Uart.h>
+   3          
+   4          sfr WDT_CONTR   = 0xc1;  
+   5          sfr P1M1 = 0x91;
+   6          sfr P1M0 = 0x92;
+   7          
+   8          sbit key1 = P1^2;
+   9          sbit key2 = P1^3;
+  10          
+  11          void sysInit();
+  12          void Timer0Init(void);
+  13          
+  14          void Delay5ms();
+  15          
+  16          unsigned int waitCount = 0;
+  17          unsigned int lookDogCount = 0;
+  18          
+  19          unsigned char SEND_FLAG = 0;
+  20          unsigned char LOOK_DOG_FLAG = 0;
+  21          
+  22          unsigned char c1,c2;
+  23          void main()
+  24          {
+  25   1        
+  26   1        key1 = 1;
+  27   1        key2 = 1;
+  28   1        
+  29   1        P1M1 = 0x00;
+  30   1        P1M0 = 0x00;
+  31   1        
+  32   1        sysInit();
+  33   1        
+  34   1        WDT_CONTR = 0x06;
+  35   1        WDT_CONTR |= 0x20;
+  36   1        
+  37   1        while(1)
+  38   1        {
+  39   2          if(LOOK_DOG_FLAG)
+  40   2          {
+  41   3            LOOK_DOG_FLAG = 0;
+  42   3            WDT_CONTR |= 1 << 4;
+  43   3          }
+  44   2          
+  45   2          if(SEND_FLAG)
+  46   2          {
+  47   3            
+  48   3            if(key1 == 0)
+  49   3            {
+  50   4               Delay5ms();
+  51   4               if(key1 == 0)
+  52   4               {
+  53   5                  c1 = 0x01;
+  54   5               }
+C51 COMPILER V9.56.0.0   MAIN                                                              06/02/2017 21:38:37 PAGE 2   
+
+  55   4            }
+  56   3            else
+  57   3            {
+  58   4              c1 = 0x00;
+  59   4            }
+  60   3          
+  61   3            if(key2 == 0)
+  62   3            {
+  63   4               Delay5ms();
+  64   4               if(key2 == 0)
+  65   4               {
+  66   5                  c2 = 0x01;
+  67   5               }
+  68   4            }
+  69   3            else
+  70   3            {
+  71   4              c2 = 0x00;
+  72   4            }
+  73   3            
+  74   3            opt_ss(c1,c2);
+  75   3            SEND_FLAG = 0;
+  76   3          }
+  77   2          
+  78   2          paraerData();
+  79   2        }
+  80   1      }
+  81          
+  82          void sysInit()
+  83          {
+  84   1        
+  85   1        Timer0Init();
+  86   1        
+  87   1        UART1_Init();
+  88   1        
+  89   1      }
+  90          
+  91          void Timer0Init(void)   
+  92          {
+  93   1        AUXR |= 0x80; 
+  94   1        TMOD &= 0xF0;   
+  95   1        TL0 = 0x40;   
+  96   1        TH0 = 0xa2;   
+  97   1        TF0 = 0;
+  98   1        ET0 = 1;
+  99   1        TR0 = 1;    
+ 100   1      }
+ 101          
+ 102          void tm0_isr() interrupt 1 using 1
+ 103          {
+ 104   1        if(waitCount++ ==3000)
+ 105   1        {
+ 106   2          SEND_FLAG = 1;
+ 107   2          waitCount = 0;
+ 108   2        }
+ 109   1        if(lookDogCount++ == 1000)
+ 110   1        {
+ 111   2          lookDogCount = 0;
+ 112   2          LOOK_DOG_FLAG = 1;
+ 113   2        }
+ 114   1          
+ 115   1      }
+ 116          
+C51 COMPILER V9.56.0.0   MAIN                                                              06/02/2017 21:38:37 PAGE 3   
+
+ 117          void Delay5ms()   //@24.000MHz
+ 118          {
+ 119   1        unsigned char i, j;
+ 120   1      
+ 121   1        i = 117;
+ 122   1        j = 184;
+ 123   1        do
+ 124   1        {
+ 125   2          while (--j);
+ 126   2        } while (--i);
+ 127   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    181    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      8    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

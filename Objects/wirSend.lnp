@@ -1,0 +1,5 @@
+".\Objects\STARTUP.obj",
+".\Objects\Uart1.obj",
+".\Objects\main.obj" 
+TO ".\Objects\wirSend" 
+PRINT(".\Listings\wirSend.m51") RAMSIZE(256) 
